@@ -1,0 +1,11 @@
+groq
+pinecone
+sentence-transformers
+beautifulsoup4
+requests
+python-dotenv
+langchain-text-splitters
+python-dotenv
+fastapi
+uvicorn
+pydantic
