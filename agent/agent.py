@@ -4,13 +4,15 @@ import re
 from bs4 import BeautifulSoup
 from groq import Groq
 from pinecone import Pinecone
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
+from huggingface_hub import InferenceClient
 import os
 
 load_dotenv()
+hf_client = InferenceClient(token=os.getenv("HF_TOKEN"))
 
-embedder = SentenceTransformer("all-MiniLM-L6-v2")
+# embedder = SentenceTransformer("all-MiniLM-L6-v2")
 client = Groq(api_key=os.getenv("api_key"))
 pc=Pinecone(api_key=os.getenv("pinecone_key"))
 index = pc.Index("agentops-copilot")
@@ -54,9 +56,16 @@ tools = [
     }
 ]
 
+def embed(texts: list) -> list:
+    result = hf_client.feature_extraction(
+        texts,
+        model="sentence-transformers/all-MiniLM-L6-v2"
+    )
+    return result.tolist()
+
 def search_docs(query:str, top_k:int=3) -> str:
     MIN_SCORE = 0.5
-    query_embedding = embedder.encode(query).tolist()
+    query_embedding = embed([query])[0]
     results = index.query(
         vector = query_embedding,
         top_k = top_k,
